@@ -2,7 +2,7 @@
 MIR-Engine
 
 
-[CODE]push ebp                        enter Imm, 0
+push ebp                        enter Imm, 0
 mov ebp, esp               ->   nop
 add esp, -Imm                   nop
  
@@ -37,4 +37,4 @@ Inverse All (ROL,ROR,RCL,RCR,SHL/SHA,SHR,SAR,ADD,SUB,AND,OR,XOR,MOV,CMP Reg1, Re
  
 It also contains a shrinker of instructions, for example add eax, 10 followed by sub eax, 20 will become add eax, -10 or mov Reg, 10 followed by add Reg, 10 will become mov eax, 20.
 This is not really useful for PE files since they are already optimized.
-[\CODE]
+
