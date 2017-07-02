@@ -13,25 +13,24 @@ int main(int argc, char* argv[])
 		return 2;
 
 	srand(time(NULL));
-	FManager->OnSetup(argv[1]);
+	auto FManager = std::make_unique<FileManagement>("d.exe");
 	
-	inBuff = (BYTE*)FManager->GetBytePointer();
-	FileSize = FManager->GetSize();
+	inBuff = (BYTE*)(reinterpret_cast<DWORD>(FManager->GetBytePointer()) + FManager->pTextSection->PointerToRawData);
+	FileSize = FManager->pTextSection->SizeOfRawData;
 
 	printf("Want To Morph All Instructions? '1' For All, '0' For Randomized:\n");
 	std::cin >> AllMut;
 	
 	PeMut->Mutate(inBuff, FileSize, AllMut);
 
-	printf("Enter Name Of New Mutated File (Needs .exe suffix):\n");
+	printf("Enter Name Of New Mutated File:\n");
 	std::cin >> newName;
+	newName += ".exe";
 	
-	FManager->WriteNewFile(newName.c_str(), inBuff, FileSize);
+	FManager->WriteNewFile(newName.c_str(), FManager->GetBytePointer(), FManager->GetSize());
 
 	FManager->~FileManagement();
 	printf("Succesfully Made New PE!\n");
 	Sleep(3000);
 	return 0;
 }
-
-
