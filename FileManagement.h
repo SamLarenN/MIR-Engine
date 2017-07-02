@@ -3,24 +3,25 @@
 class FileManagement
 {
 public:
-	FileManagement();
+	FileManagement(const std::string FileName);
 	~FileManagement();
-	void OnSetup(const char* FileName);
 
-	DWORD GetSize();
-	HANDLE GetHandle();
-	void* GetBytePointer();
-	bool WriteNewFile(const char* NewFileName, void* Bytes, DWORD NumberOfBytesToWrite);
-
-private:
-	bool ReadExistingFile(const char* FileName);
+	DWORD GetSize() const;
+	HANDLE GetHandle() const;
+	void* GetBytePointer() const;
+	bool WriteNewFile(const std::string NewFileName, void* Bytes, const DWORD NumberOfBytesToWrite);
 
 private:
-	void*		pBytes;
-	HANDLE		hFile;
-	DWORD		dFileSize;
+	bool ReadExistingFile();
+	bool GetTextSection();
 
-	HANDLE		hNewFile;
+private:
+	void*				m_pBytes = nullptr;
+	HANDLE				m_hFile = INVALID_HANDLE_VALUE;
+	DWORD				m_dwFileSize;
+	HANDLE				m_hNewFile = INVALID_HANDLE_VALUE;
+	const std::string	m_FileName;
+
+public:
+	PIMAGE_SECTION_HEADER pTextSection;
 };
-
-extern FileManagement* FManager;
