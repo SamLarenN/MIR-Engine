@@ -295,7 +295,40 @@ bool PeMutator::Mutate(BYTE* inBuf, DWORD SizeToMut, bool MutAll)
 							BYTE reg2 = ((inBuf[i + 1] & 0x38) >> 3);
 							inBuf[i + 1] = (reg1 << 3) + 0xC0 + reg2;
 						}
+
+		// push reg (0x50+Reg)
+		// push reg (0xFF, 0xF0+Reg)
+		// pop reg (0x58+Reg)
+		// pop reg (0x8F, 0xC0+Reg)
+		if (inBuf[i] == 0xFF || inBuf[i] == 0x8F)
+			if (inBuf[i + 1] >= 0xF0 && inBuf[i + 1] <= 0xF7)
+			{
+				inBuf[i] = 0x90;
+				inBuf[i + 1] -= 0xA0;
+			}
+			else if (inBuf[i + 1] >= 0xC0 && inBuf[i + 1] <= 0xC7)
+			{
+				inBuf[i] = 0x90;
+				inBuf[i + 1] -= 0x68;
+			}
+
+
 		
+		   // mov reg, imm8 
+		   // push imm8 / pop reg
+		if (inBuf[i] < 0xC0 && inBuf[i] > 0xB7)
+			if (length_disasm(&inBuf[i]) == 5)
+				if (inBuf[i + 2] == 0 && inBuf[i + 3] == 0 && inBuf[i + 4] == 0)
+				{
+					++MutationCount;
+					BYTE t = inBuf[i];
+					t -= 0x60;
+					inBuf[i] = 0x6A;
+					inBuf[i + 2] = t;
+					inBuf[i + 3] = 0x90;
+					inBuf[i + 4] = 0x90;
+				}
+				
 		
 		// Instruction shrinking (not needed for compiled pe's though, they are already optimized)
 		/*if ((inBuf[i] & 0xFD) == 0x81)
@@ -334,7 +367,7 @@ bool PeMutator::Mutate(BYTE* inBuf, DWORD SizeToMut, bool MutAll)
 				}*/
 
 	}
-	printf("%d Mutations Done!\n", MutationCount);
+	printf("%d Mutations Done!\n\n", MutationCount);
 	return 1;
 }
 
