@@ -87,6 +87,20 @@ bool PeMutator::Mutate(BYTE* inBuf, DWORD SizeToMut, bool MutAll)
 						++MutationCount;
 					}
 
+		// Inverse ADD/SUB/AND/OR/XOR/MOV/CMP Reg1, Reg2
+		if (inBuf[i] <= 0x3B || inBuf[i] == 0x8B || inBuf[i] == 0x89)
+			if (inBuf[i] & 9 == 1)
+				if (length_disasm(&inBuf[i]) == 2)
+					if (inBuf[i + 1] & 0xC0 == 0xC0)
+						if (rand() % 2 || MutAll)
+						{
+							++MutationCount;
+							inBuf[i] ^= 2;
+							BYTE reg1 = inBuf[i + 1] & 7;
+							BYTE reg2 = ((inBuf[i + 1] & 0x38) >> 3);
+							inBuf[i + 1] = (reg1 << 3) + 0xC0 + reg2;
+						}
+
 		// 10001001 11xxxyyy     ; mov r1,r2
 		// 01010xxx 01011yyy     ; push r2 // pop r1
 		// 10001011 11xxxyyy     ; mov r1,r2
@@ -281,20 +295,6 @@ bool PeMutator::Mutate(BYTE* inBuf, DWORD SizeToMut, bool MutAll)
 						inBuf[i + 1] = 0xC0 | t | (t << 3);
 						inBuf[i + 2] = 0x48 | t;
 					}
-
-		// Inverse ADD/SUB/AND/OR/XOR/MOV/CMP Reg1, Reg2
-		if (inBuf[i] <= 0x3B || inBuf[i] == 0x8B || inBuf[i] == 0x89)
-			if (inBuf[i] & 9 == 1)
-				if (length_disasm(&inBuf[i]) == 2)
-					if (inBuf[i + 1] & 0xC0 == 0xC0)
-						if (rand() % 2 || MutAll)
-						{
-							++MutationCount;
-							inBuf[i] ^= 2;
-							BYTE reg1 = inBuf[i + 1] & 7;
-							BYTE reg2 = ((inBuf[i + 1] & 0x38) >> 3);
-							inBuf[i + 1] = (reg1 << 3) + 0xC0 + reg2;
-						}
 
 		// push reg (0x50+Reg)
 		// push reg (0xFF, 0xF0+Reg)
